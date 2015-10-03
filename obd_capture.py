@@ -15,7 +15,8 @@ class OBD_Capture():
         localtime = time.localtime(time.time())
 
     def connect(self):
-        portnames = scanSerial()
+        #portnames = scanSerial()
+        portnames = ['/dev/ttyUSB0']
         print portnames
         for port in portnames:
             self.port = obd_io.OBDPort(port, None, 2, 2)
@@ -41,12 +42,14 @@ class OBD_Capture():
         self.unsupportedSensorList = []
 
         # loop through PIDs binary
-        for i in range(0, len(self.supp)):
+        #for i in range(0, len(self.supp)):
+        for i in range(0, min(len(self.supp), len(obd_sensors.SENSORS)-1)):
             if self.supp[i] == "1":
                 # store index of sensor and sensor object
                 self.supportedSensorList.append([i+1, obd_sensors.SENSORS[i+1]])
             else:
                 self.unsupportedSensorList.append([i+1, obd_sensors.SENSORS[i+1]])
+                pass
         
         for supportedSensor in self.supportedSensorList:
             print "supported sensor index = " + str(supportedSensor[0]) + " " + str(supportedSensor[1].shortname)        
@@ -69,11 +72,14 @@ class OBD_Capture():
                     log_string += name + " = " + str(value) + " " + str(unit) + "\n"
 
                 print log_string,
+                f.write(log_string)
                 time.sleep(0.5)
 
         except KeyboardInterrupt:
             self.port.close()
             print("stopped")
+
+f = open("/home/drive/data/obd", "a")
 
 if __name__ == "__main__":
 
